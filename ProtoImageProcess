@@ -1,0 +1,95 @@
+detector = peopleDetectorACF;
+
+oldpath = path;
+path(oldpath,'C:\Users\Setsu\Documents\MATLAB\PNGImages')
+
+%I = imread('PennPed00071.png');
+I = imread('PennPed00036.png');
+[bboxes,scores] = detect(detector,I);
+
+%I = insertObjectAnnotation(I,'rectangle',bboxes,scores);
+
+
+
+%%I = insertObjectAnnotation(I,'rectangle',bboxes,1:size(bboxes,1));
+
+
+%%figure
+%%imshow(I)
+%%title('Detected People and Detection Scores')
+
+
+
+
+cond = zeros(size(bboxes,1),1);
+
+
+  a = zeros(1,size(bboxes,1));
+
+
+
+for i=1:(size(bboxes,1))
+
+  
+    
+            for j=1:(size(bboxes,1))
+
+                    if(i~= j)
+                        
+                        
+                        socialdistance = 150;
+                        
+                        dis_1 = bboxes(i,1)+bboxes(i,3);
+                        dis_2 = bboxes(j,1)+bboxes(j,3);
+                        dis_heightarray = [bboxes(i,2)+bboxes(i,4) bboxes(j,2)+bboxes(j,4)];
+
+                        dis_h1 = abs(dis_1-dis_2);
+                        %dis2_h = abs(bboxes(i,1)+bboxes(j,3)-bboxes(i,1));
+                        %dis1_v = abs(bboxes(i,2)-bboxes(j,2));   
+                        %dis2_h = abs(bboxes(i,2)+bboxes(i,4)-bboxes(j,2)-bboxes(j ,4));   
+
+                        fprintf("distance between object %i and %i is  Dh1=%i\n",i ,j, dis_h1);
+
+
+                        %the distances between pixels
+                        if(a(i)<1)
+                            
+                            dis_max = max(dis_heightarray);
+                            fprintf("dis_max= %i\n",dis_max);
+                            dis_min = min(dis_heightarray);                            
+                            fprintf("dis_min= %i\n",dis_min);
+                            
+                            dis_ratio = dis_max/dis_min;
+                            
+                            socialdistance = socialdistance / dis_ratio;
+                            
+                            fprintf("The ratio distance is %i, total distance is %i\n", dis_ratio, socialdistance);
+                            
+                            if(dis_h1<socialdistance)
+
+                                a(i) = a(i)+1;
+                                I = insertObjectAnnotation(I,'rectangle',bboxes(i,:),i,'color','r');
+                                fprintf("WARNING, person %i is not social distancing\n",i);
+                            end
+                        end
+
+
+                    fprintf("end of check\n");
+
+                    end
+            end
+            
+    if(a(i)<1)    
+
+    I = insertObjectAnnotation(I,'rectangle',bboxes(i,:),i,'color','g');  
+    fprintf("PRINTING %i \n",i);
+    end           
+
+i = i+1 ;
+end
+
+
+
+figure
+imshow(I)
+title('Detected People and Detection Scores')
